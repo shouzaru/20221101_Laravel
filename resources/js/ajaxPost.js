@@ -4,15 +4,6 @@ $( function (){
 
             // let form = $('#form')  //これだと常に最初のformを指定してしまう
             let form = $(this.form);  //クリックしたcheckboxを含むformをjqueryで取得
-
-            // let url = form.attr('action');
-            // let type = form.attr('method');
-            // let data = form.serialize() 
-
-            // console.log ('url:'+ url);
-            // console.log('type:'+ type);
-            // console.log('data:'+data);
-        
         
         $.ajax({
             headers: {

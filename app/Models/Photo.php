@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Photo extends Model
 {
     use HasFactory;
-    protected $table = "photos"; //これを追加！
-    protected $fillable = ['path','date']; //これを追加！
+    protected $table = "photos"; 
+    protected $fillable = ['path','date']; 
 
     public function Players()
     {

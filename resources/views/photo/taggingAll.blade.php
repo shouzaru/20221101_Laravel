@@ -96,9 +96,8 @@
                         @csrf
                         @method('PUT')
                     <p>
-                        @foreach ($players->sortBy('number')  as $player) <!-- 全選手から一つずつ取り出す -->
+                        @foreach ($players->sortBy('number')  as $player)
                             <label class="checkbox">
-                                <!-- onchange="submit(this.form)"で、チェックしたら送信 -->
                                 <input class="PlayerCheckBox" type="checkbox" name="players[]" value="{{$player->id}}"
                                 @if(in_array($player->id , $photo->players->pluck('id')->toArray())) checked @endif> <!-- player_idとphotoが持っているplayer_idが一致したらチェック -->
                                 {{ $player->number }}{{ $player->nickname }}

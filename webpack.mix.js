@@ -12,7 +12,7 @@ const mix = require('laravel-mix');
  */
 
 mix.js('resources/js/app.js', 'public/js')
-    .js('resources/js/ajaxPost.js', 'public/js')  //追加。作成したhello.jsファイルを、public/jsディレクトリにつなげるという意味。
-    .autoload( {"jquery": [ '$', 'window.jQuery' ],} ) //追加。jqueryを使えるようにするため
+    .js('resources/js/ajaxPost.js', 'public/js')  //追加。作成したajaxPost.jsファイルを、public/jsディレクトリにつなげる。
+    .autoload( {"jquery": [ '$', 'window.jQuery' ],} ) //追加。jQueryを使えるようにするため
     .vue()
     .sass('resources/sass/app.scss', 'public/css');

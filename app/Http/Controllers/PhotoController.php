@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Storage;  //画像ファイル削除機能のた�
 use Image; // intervention/imageライブラリの読み込み
 use Carbon\Carbon;  //日付を扱うCarbonライブラリ
 
+use App\Jobs\PhotoUpload;
+
+
 class PhotoController extends Controller
 {
     /**
@@ -216,10 +219,8 @@ class PhotoController extends Controller
      */
     public function update(Request $request, $id)
     {
-
         $photo = Photo::find($id);
         $photo->players()->sync(request()->players);
-        // return request()->players;
         return back()->with('success', '編集完了しました');
     }
 
@@ -256,58 +257,51 @@ class PhotoController extends Controller
 
     // 画像アップロード処理
     public function upload(Request $request){
-        //複数の画像ファイル取得
-        $files = $request->file('photo');  //修正
+        PhotoUpload::dispatch($request);     //ジョブPhotoUploadに渡す
         
+            // if ( !empty($files) ){
+            // foreach($files as $file){
+            //     //画像ファイルのexifデータ取得、撮影日取得             
+            //     $exifdata=exif_read_data($file, 0, true);
+            //     $dateTimeOriginal = isset($exifdata["EXIF"]['DateTimeOriginal']) ? $exifdata["EXIF"]['DateTimeOriginal'] : "";
+            //     if(empty($dateTimeOriginal)){
+            //         $dateTimeOriginal = "2000-01-01 00:00:00";
+            //     }
 
-        // バリデーション 
-            //  $validator = $request->validate( [
-            //      'photo' => 'required|file|image|max:20480', 
-            //  ]);
-
-            if ( !empty($files) ){
-            foreach($files as $file){
-                //画像ファイルのexifデータ取得、撮影日取得             
-                $exifdata=exif_read_data($file, 0, true);
-                $dateTimeOriginal = isset($exifdata["EXIF"]['DateTimeOriginal']) ? $exifdata["EXIF"]['DateTimeOriginal'] : "";
-                if(empty($dateTimeOriginal)){
-                    $dateTimeOriginal = "2000-01-01 00:00:00";
-                }
-
-                $img = Image::make($file); //intervention/imageライブラリを使用する準備
-                $img->orientate();         // スマホアップ画像に対応
-                $img->resize(
-                    2048,  //LINEアルバムの設定に合わせて横2048pixlに設定
-                    null,
-                    function ($constraint) {
-                        $constraint->aspectRatio(); // 縦横比を保持したままにする
-                        $constraint->upsize(); // 小さい画像は大きくしない
-                    }
-                );
+            //     $img = Image::make($file); //intervention/imageライブラリを使用する準備
+            //     $img->orientate();         // スマホアップ画像に対応
+            //     $img->resize(
+            //         2048,  //LINEアルバムの設定に合わせて横2048pixlに設定
+            //         null,
+            //         function ($constraint) {
+            //             $constraint->aspectRatio(); // 縦横比を保持したままにする
+            //             $constraint->upsize(); // 小さい画像は大きくしない
+            //         }
+            //     );
                 
-                $ext = $file->guessExtension(); // ファイルの拡張子取得
-                $fileName = $dateTimeOriginal.'.'.$ext; //ファイル名を生成。撮影日をファイル名にする。
-                $pathFileName = "app/public/uploads/" . $fileName; //保存先のパス名
-                $save_path = storage_path($pathFileName); //保存先
+            //     $ext = $file->guessExtension(); // ファイルの拡張子取得
+            //     $fileName = $dateTimeOriginal.'.'.$ext; //ファイル名を生成。撮影日をファイル名にする。
+            //     $pathFileName = "app/public/uploads/" . $fileName; //保存先のパス名
+            //     $save_path = storage_path($pathFileName); //保存先
                 
-                // ファイル名（撮影日時）が重複したら末尾にランダムな三文字を加える
-                while(file_exists($save_path)){  //すでにファイル名があったら
-                    $randomstr = Str::random(3); //ランダムな三文字を生成
-                    $fileName = $dateTimeOriginal . '_' . $randomstr .'.'.$ext; //末尾に加える
-                    $pathFileName = "app/public/uploads/" . $fileName;  //$pathFileNameに再代入
-                    $save_path = storage_path($pathFileName); //保存先
-                }
+            //     // ファイル名（撮影日時）が重複したら末尾にランダムな三文字を加える
+            //     while(file_exists($save_path)){  //すでにファイル名があったら
+            //         $randomstr = Str::random(3); //ランダムな三文字を生成
+            //         $fileName = $dateTimeOriginal . '_' . $randomstr .'.'.$ext; //末尾に加える
+            //         $pathFileName = "app/public/uploads/" . $fileName;  //$pathFileNameに再代入
+            //         $save_path = storage_path($pathFileName); //保存先
+            //     }
 
-                $img->save($save_path); //保存。これはintervention/imageライブラリの書き方。画像圧縮してるからこれ。
+            //     $img->save($save_path); //保存。これはintervention/imageライブラリの書き方。画像圧縮してるからこれ。
 
-                // 画像のファイル名をDBに保存。Photoモデルで指定したphotosテーブルに保存。
-                    $photo = Photo::create([
-                        "path" => $fileName,
-                        "date" => $dateTimeOriginal,
-                    ]);
+            //     // 画像のファイル名をDBに保存。Photoモデルで指定したphotosテーブルに保存。
+            //         $photo = Photo::create([
+            //             "path" => $fileName,
+            //             "date" => $dateTimeOriginal,
+            //         ]);
 
-                    $photo->players()->attach(request()->players); //追加 photoとplayerのリレーション
-            }}
+            //         $photo->players()->attach(request()->players); //追加 photoとplayerのリレーション
+            // }}
             return redirect('photo');
         }
 }
